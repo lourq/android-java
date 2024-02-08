@@ -32,51 +32,51 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        b = findViewById(R.id.button);
-        t = findViewById(R.id.textView);
-        headerText = findViewById(R.id.headerTime);
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-            targetDate = sdf.parse("2024-02-08 08:50:00");
-
-            currentDate = Calendar.getInstance().getTime();
-
-            long diff = targetDate.getTime() - currentDate.getTime();
-
-            long days = TimeUnit.MILLISECONDS.toDays(diff);
-            long hours = TimeUnit.MILLISECONDS.toHours(diff) % 24;
-            long minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60;
-            long seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60;
-
-            timeLeft = String.format(Locale.getDefault(),
-                    "Time Left -> %d д %d ч %d м %d секунд",
-                    days, hours, minutes, seconds);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(buttonClickCount < 20) {
-                    buttonSize += 30;
-                    buttonClickCount++;
-                    b.getLayoutParams().width = buttonSize;
-                    b.requestLayout();
-                    t.setText(String.valueOf(buttonClickCount));
-
-                } else {
-                    b.setBackgroundColor(Color.RED);
-                    b.setText("Broken T^T");
-                }
-
-//                Toast.makeText(MainActivity.this,
-//                        String.valueOf(timeLeft),
-//                        Toast.LENGTH_SHORT).show();
-                headerText.setText(timeLeft);
-            }
-        });
+//        b = findViewById(R.id.button);
+//        t = findViewById(R.id.textView);
+//        headerText = findViewById(R.id.headerTime);
+//        try {
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+//            targetDate = sdf.parse("2024-02-08 08:50:00");
+//
+//            currentDate = Calendar.getInstance().getTime();
+//
+//            long diff = targetDate.getTime() - currentDate.getTime();
+//
+//            long days = TimeUnit.MILLISECONDS.toDays(diff);
+//            long hours = TimeUnit.MILLISECONDS.toHours(diff) % 24;
+//            long minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60;
+//            long seconds = TimeUnit.MILLISECONDS.toSeconds(diff) % 60;
+//
+//            timeLeft = String.format(Locale.getDefault(),
+//                    "Time Left -> %d д %d ч %d м %d секунд",
+//                    days, hours, minutes, seconds);
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        b.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                if(buttonClickCount < 20) {
+//                    buttonSize += 30;
+//                    buttonClickCount++;
+//                    b.getLayoutParams().width = buttonSize;
+//                    b.requestLayout();
+//                    t.setText(String.valueOf(buttonClickCount));
+//
+//                } else {
+//                    b.setBackgroundColor(Color.RED);
+//                    b.setText("Broken T^T");
+//                }
+//
+////                Toast.makeText(MainActivity.this,
+////                        String.valueOf(timeLeft),
+////                        Toast.LENGTH_SHORT).show();
+//                headerText.setText(timeLeft);
+//            }
+//        });
     }
 
     public void func(View view) {
