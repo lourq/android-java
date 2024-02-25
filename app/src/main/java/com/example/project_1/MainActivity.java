@@ -1,114 +1,124 @@
 package com.example.project_1;
 
-import android.media.Image;
+import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
-class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
-
-    private List<Item> list;
-    private OnItemClickListener mItemClickListener;
-
-    void setOnItemClickListener(OnItemClickListener listener) {
-        mItemClickListener = listener;
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView img;
-        TextView t1;
-        TextView t2;
-
-        ViewHolder(View v) {
-            super(v);
-            img = (ImageView) v.findViewById(R.id.img1);
-            t1 = (TextView) v.findViewById(R.id.t1);
-            t2 = (TextView) v.findViewById(R.id.t2);
-
-        }
-    }
-
-    RecyclerAdapter(List<Item> data) {
-        list = data;
-    }
-
-    @Override
-    public RecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.my_item, parent, false);
-
-        return new ViewHolder(v);
-    }
-
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Item item = list.get(position);
-        holder.t1.setText(item.getName());
-        holder.t2.setText("$" + item.getPrice());
-        holder.img.setImageResource(item.getImageId());
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mItemClickListener != null) {
-                    mItemClickListener.onItemClick(position);
-                }
-            }
-        });
-    }
-
-    @Override
-    public int getItemCount() {
-        return list.size();
-    }
-
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-    }
-}
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int REQUEST_POST_NOTIFICATIONS_PERMISSION = 1;
+    private static final String CHANNEL_ID = "alex_channel";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        List<Item> list = new ArrayList<>();
-
-        list.add(new Item("Porsche 911 Turbo S" , 230.401  , R.drawable.porsche));
-        list.add(new Item("Potato" , 3  , R.drawable.potato));
-        list.add(new Item("12 baliv" , 123445565656.1  , R.drawable.hw));
-
-        RecyclerView rv = findViewById(R.id.my_recycler_view);
-
-        rv.setHasFixedSize(true);
-
-        RecyclerView.LayoutManager lm = new LinearLayoutManager(this);
-        rv.setLayoutManager(lm);
-        RecyclerView.Adapter a = new RecyclerAdapter(list);
-
-        rv.setAdapter(a);
+        checkNotificationsPermission();
     }
 
-    private String[] getDataSet() {
-        int rowCount = 50;
-        String[] mDataSet = new String[rowCount];
-        for (int i = 0; i < rowCount; i++) {
-            mDataSet[i] = "пункт №" + i;
+    // Проверка и запрос разрешения на уведомления
+    private void checkNotificationsPermission() {
+        if (isNotificationsPermissionGranted()) {
+            showToast("granted");
+        } else {
+            requestNotificationsPermission();
         }
-        return mDataSet;
+    }
+
+    // Проверка, предоставлено ли разрешение на уведомления
+    private boolean isNotificationsPermissionGranted() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    // Запрос разрешения на уведомления
+    private void requestNotificationsPermission() {
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                REQUEST_POST_NOTIFICATIONS_PERMISSION
+        );
+    }
+
+    // Обработка результата запроса разрешения
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_POST_NOTIFICATIONS_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showToast("granted");
+            } else {
+                showToast("denied");
+            }
+        }
+    }
+
+    // Вывод тоста
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+    public void onClick(View view) {
+        // Менеджер уведомлений
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder;
+
+        Context context = getApplicationContext();
+        Resources res = context.getResources();
+
+        // Создание канала уведомлений для SDK >= 26
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel(manager);
+            builder = new NotificationCompat.Builder(this, CHANNEL_ID);
+        } else {
+            builder = new NotificationCompat.Builder(context);
+        }
+
+        // PendingIntent для открытия активности при нажатии на уведомление
+        PendingIntent action = PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
+
+        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.notification_player);
+
+        // Настройка параметров уведомления
+        builder.setContentIntent(action)
+                .setSmallIcon(R.drawable.player)
+                .setContentTitle("Custom Notification")
+                .setCustomContentView(notificationLayout)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setAutoCancel(true);
+
+        // Создание и отправка уведомления
+        Notification notification = builder.build();
+        long notificationCode = System.currentTimeMillis();
+        manager.notify((int) notificationCode, notification);
+    }
+
+    // Создание канала уведомлений для SDK >= 26
+    private void createNotificationChannel(NotificationManager manager) {
+        if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "AlexChannel", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Alex channel description");
+            manager.createNotificationChannel(channel);
+        }
     }
 }
